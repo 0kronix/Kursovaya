@@ -1,3 +1,0 @@
-# Kursovaya
-
-wefweg
