@@ -3,10 +3,7 @@
 #include <sstream>
 #include <algorithm>
 
-// ЯВНАЯ РЕАЛИЗАЦИЯ КОНСТРУКТОРА
 FBToSVGConverter::FBToSVGConverter() {}
-
-// ЯВНАЯ РЕАЛИЗАЦИЯ ДЕСТРУКТОРА
 FBToSVGConverter::~FBToSVGConverter() {}
 
 bool FBToSVGConverter::loadFromXML(const std::string& filename) {
@@ -221,11 +218,11 @@ void FBToSVGConverter::calculateDimensions(int& width, int& height) const {
     height = maxElements * 20 + 50;
     
     for (const auto& event : fb.events) {
-        width += event.name.length() * 10;
+        width += (event.name.length()) * 5;
     }
     
     for (const auto& data : fb.data) {
-        width += data.name.length() * 10;
+        width += (data.name.length()) * 5;
     }
 }
 
