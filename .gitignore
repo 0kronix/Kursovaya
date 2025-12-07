@@ -1,2 +1,4 @@
 ﻿build/
 resources/svg/*.svg
+
+*.exe
