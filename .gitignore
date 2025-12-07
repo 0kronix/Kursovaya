@@ -1,0 +1,29 @@
+﻿# Исполняемые файлы
+*.exe
+
+# Объектные файлы  
+*.o
+*.obj
+*.pdb
+*.ilk
+
+# Папки сборки
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Сгенерированные SVG
+resources/svg/*.svg
+!resources/svg/.gitkeep
