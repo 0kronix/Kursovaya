@@ -217,13 +217,26 @@ void FBToSVGConverter::calculateDimensions(int& width, int& height) const {
     int maxElements = std::max(inputEvents + inputData, outputEvents + outputData);
     height = maxElements * 20 + 50;
     
+    int maxNameLength = 0;
+    
     for (const auto& event : fb.events) {
-        width += (event.name.length()) * 5;
+        int nameLength = event.name.length();
+        if (nameLength > maxNameLength) {
+            maxNameLength = nameLength;
+        }
     }
     
     for (const auto& data : fb.data) {
-        width += (data.name.length()) * 5;
+        int nameLength = data.name.length();
+        if (nameLength > maxNameLength) {
+            maxNameLength = nameLength;
+        }
     }
+    
+    width = maxNameLength * 8 + 100;
+
+    height = std::max(height, 90);
+    width = std::max(width, 100);
 }
 
 std::string FBToSVGConverter::extractXMLValue(const std::string& content, const std::string& tag) const {
