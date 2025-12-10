@@ -2,6 +2,8 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <iostream>
+#include <tinyxml2.h>
 
 bool FBToSVGConverter::loadFromXML(const std::string& filename) {
     return parseXML(filename);
@@ -247,109 +249,118 @@ std::string FBToSVGConverter::extractXMLValue(const std::string& content, const 
     return content.substr(quoteStart + 1, quoteEnd - quoteStart - 1);
 }
 
-void FBToSVGConverter::parseEvents(const std::string& content, const std::string& eventsTag, const std::string& eventType) {
-    std::string startTag = "<" + eventsTag + ">";
-    std::string endTag = "</" + eventsTag + ">";
-    
-    size_t startPos = content.find(startTag);
-    if (startPos == std::string::npos) return;
-    
-    size_t endPos = content.find(endTag, startPos);
-    if (endPos == std::string::npos) return;
-    
-    std::string eventsSection = content.substr(startPos, endPos - startPos + endTag.length());
-    
-    size_t eventStart = 0;
-    while ((eventStart = eventsSection.find("<Event", eventStart)) != std::string::npos) {
-        size_t eventEnd = eventsSection.find("</Event>", eventStart);
-        if (eventEnd == std::string::npos) break;
-        
-        std::string eventStr = eventsSection.substr(eventStart, eventEnd - eventStart + 8);
-        
-        std::string name = extractXMLValue(eventStr, "Name=");
-        std::string type = extractXMLValue(eventStr, "Type=");
-        std::string comment = extractXMLValue(eventStr, "Comment=");
-        
-        if (!name.empty()) {
-            Event event(name, type, eventType, comment);
-            fb.events.push_back(event);
+void FBToSVGConverter::parseEvents(tinyxml2::XMLElement* parent) {
+    tinyxml2::XMLElement* eventInputs = parent->FirstChildElement("EventInputs");
+    if (eventInputs) {
+        for (tinyxml2::XMLElement* event = eventInputs->FirstChildElement("Event"); 
+             event; 
+             event = event->NextSiblingElement("Event")) {
+            
+            std::string name = event->Attribute("Name") ? event->Attribute("Name") : "";
+            std::string type = event->Attribute("Type") ? event->Attribute("Type") : "";
+            std::string comment = event->Attribute("Comment") ? event->Attribute("Comment") : "";
+            
+            if (!name.empty()) {
+                fb.events.push_back(Event(name, type, "input", comment));
+            }
         }
-        
-        eventStart = eventEnd + 8;
+    }
+
+    tinyxml2::XMLElement* eventOutputs = parent->FirstChildElement("EventOutputs");
+    if (eventOutputs) {
+        for (tinyxml2::XMLElement* event = eventOutputs->FirstChildElement("Event"); 
+             event; 
+             event = event->NextSiblingElement("Event")) {
+            
+            std::string name = event->Attribute("Name") ? event->Attribute("Name") : "";
+            std::string type = event->Attribute("Type") ? event->Attribute("Type") : "";
+            std::string comment = event->Attribute("Comment") ? event->Attribute("Comment") : "";
+            
+            if (!name.empty()) {
+                fb.events.push_back(Event(name, type, "output", comment));
+            }
+        }
     }
 }
 
-void FBToSVGConverter::parseData(const std::string& content, const std::string& dataTag, const std::string& dataType) {
-    std::string startTag = "<" + dataTag + ">";
-    std::string endTag = "</" + dataTag + ">";
-    
-    size_t startPos = content.find(startTag);
-    if (startPos == std::string::npos) return;
-    
-    size_t endPos = content.find(endTag, startPos);
-    if (endPos == std::string::npos) return;
-    
-    std::string dataSection = content.substr(startPos, endPos - startPos + endTag.length());
-    
-    size_t dataStart = 0;
-    while ((dataStart = dataSection.find("<VarDeclaration", dataStart)) != std::string::npos) {
-        size_t dataEnd = dataSection.find("/>", dataStart);
-        if (dataEnd == std::string::npos) break;
-        
-        std::string dataStr = dataSection.substr(dataStart, dataEnd - dataStart + 8);
-        
-        std::string name = extractXMLValue(dataStr, "Name=");
-        std::string type = extractXMLValue(dataStr, "Type=");
-        std::string comment = extractXMLValue(dataStr, "Comment=");
-        
-        if (!name.empty()) {
-            Data data(name, type, dataType, comment);
-            fb.data.push_back(data);
+void FBToSVGConverter::parseData(tinyxml2::XMLElement* parent) {
+    tinyxml2::XMLElement* inputVars = parent->FirstChildElement("InputVars");
+    if (inputVars) {
+        for (tinyxml2::XMLElement* var = inputVars->FirstChildElement("VarDeclaration"); 
+             var; 
+             var = var->NextSiblingElement("VarDeclaration")) {
+            
+            std::string name = var->Attribute("Name") ? var->Attribute("Name") : "";
+            std::string type = var->Attribute("Type") ? var->Attribute("Type") : "";
+            std::string comment = var->Attribute("Comment") ? var->Attribute("Comment") : "";
+            
+            if (!name.empty()) {
+                fb.data.push_back(Data(name, type, "input", comment));
+            }
         }
-        
-        dataStart = dataEnd + 8;
+    }
+
+    tinyxml2::XMLElement* outputVars = parent->FirstChildElement("OutputVars");
+    if (outputVars) {
+        for (tinyxml2::XMLElement* var = outputVars->FirstChildElement("VarDeclaration"); 
+             var; 
+             var = var->NextSiblingElement("VarDeclaration")) {
+            
+            std::string name = var->Attribute("Name") ? var->Attribute("Name") : "";
+            std::string type = var->Attribute("Type") ? var->Attribute("Type") : "";
+            std::string comment = var->Attribute("Comment") ? var->Attribute("Comment") : "";
+            
+            if (!name.empty()) {
+                fb.data.push_back(Data(name, type, "output", comment));
+            }
+        }
     }
 }
 
 bool FBToSVGConverter::parseXML(const std::string& filename) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
+    tinyxml2::XMLDocument doc;
+    if (doc.LoadFile(filename.c_str()) != tinyxml2::XML_SUCCESS) {
         return false;
     }
 
-    std::string line;
-    std::string content;
-    while (std::getline(file, line)) {
-        content += line;
-    }
-    file.close();
-
     fb.x = 500;
     fb.y = 100;
-
     fb.events.clear();
     fb.data.clear();
 
-    fb.name = extractXMLValue(content, "Name=");
-    fb.version = extractXMLValue(content, "Version=");
+    tinyxml2::XMLElement* fbType = doc.FirstChildElement("FBType");
+    if (!fbType) return false;
 
-    if (content.find("<BasicFB>") != std::string::npos) {
+    fb.name = fbType->Attribute("Name") ? fbType->Attribute("Name") : "";
+    fb.version = "1.0";
+    tinyxml2::XMLElement* versionInfo = fbType->FirstChildElement("VersionInfo");
+    if (versionInfo) {
+        const char* versionAttr = versionInfo->Attribute("Version");
+        if (versionAttr) {
+            fb.version = versionAttr;
+        }
+    }
+
+    if (fbType->FirstChildElement("BasicFB")) {
         fb.type = "BasicFB";
-    } else if (content.find("<CompositeFB>") != std::string::npos) {
+    } else if (fbType->FirstChildElement("CompositeFB")) {
         fb.type = "CompositeFB";
-    } else if (content.find("<ServiceInterfaceFB>") != std::string::npos) {
+    } else if (fbType->FirstChildElement("ServiceInterfaceFB")) {
         fb.type = "ServiceInterfaceFB";
-    } else if (content.find("<SimpleFB>") != std::string::npos) {
+    } else if (fbType->FirstChildElement("SimpleFB")) {
         fb.type = "SimpleFB";
     } else {
         fb.type = "BasicFB";
     }
 
-    parseEvents(content, "EventInputs", "input");
-    parseEvents(content, "EventOutputs", "output");
-
-    parseData(content, "InputVars", "input");
-    parseData(content, "OutputVars", "output");
+    tinyxml2::XMLElement* interfaceList = fbType->FirstChildElement("InterfaceList");
+    if (!interfaceList) {
+        parseEvents(fbType);
+        parseData(fbType);
+    } else {
+        parseEvents(interfaceList);
+        parseData(interfaceList);
+    }
 
     return true;
 }

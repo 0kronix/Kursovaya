@@ -4,6 +4,11 @@
 #include <string>
 #include <vector>
 
+namespace tinyxml2 {
+    class XMLDocument;
+    class XMLElement;
+}
+
 struct Event {
     std::string name;
     std::string type;
@@ -50,10 +55,11 @@ private:
     std::string createData(int width) const;
     std::string createBlockName(int width) const;
     void calculateDimensions(int& width, int& height) const;
+
     bool parseXML(const std::string& filename);
     std::string extractXMLValue(const std::string& content, const std::string& tag) const;
-    void parseEvents(const std::string& content, const std::string& eventsTag, const std::string& type);
-    void parseData(const std::string& content, const std::string& dataTag, const std::string& dataType);
+    void parseEvents(tinyxml2::XMLElement* fbType);
+    void parseData(tinyxml2::XMLElement* fbType);
 };
 
 #endif
