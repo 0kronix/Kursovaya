@@ -17,7 +17,6 @@ endif()
 
 include(FetchContent)
 
-TinyXML-2
 FetchContent_Declare(
     tinyxml2
     GIT_REPOSITORY https://github.com/leethomason/tinyxml2.git
