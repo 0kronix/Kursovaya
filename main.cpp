@@ -1,4 +1,5 @@
 #include "src/FBToSVGConverter.h"
+#include <argparse/argparse.hpp>
 #include <iostream>
 #include <filesystem>
 #include <vector>
@@ -6,63 +7,84 @@
 
 namespace fs = std::filesystem;
 
-int main() {
-    fs::path inputDir = "resources/fbt";
-    fs::path outputDir = "resources/svg";
+std::vector<fs::path> getFbtFiles(const fs::path& directory) {
+    std::vector<fs::path> files;
     
-    std::cout << "Input directory: " << fs::absolute(inputDir) << std::endl;
-    std::cout << "Output directory: " << fs::absolute(outputDir) << std::endl;
-    
-    if (!fs::exists(inputDir)) {
-        std::cerr << "ERROR: Input directory does not exist!" << std::endl;
-        std::cin.get();
-        return 1;
+    if (!fs::exists(directory) || !fs::is_directory(directory)) {
+        return files;
     }
     
-    if (!fs::exists(outputDir)) {
-        std::cout << "Creating output directory..." << std::endl;
-        fs::create_directories(outputDir);
-    }
-    
-    std::vector<fs::path> fbtFiles;
-    int fileCount = 0;
-    
-    for (const auto& entry : fs::directory_iterator(inputDir)) {
+    for (const auto& entry : fs::directory_iterator(directory)) {
         if (entry.is_regular_file() && entry.path().extension() == ".fbt") {
-            fbtFiles.push_back(entry.path());
-            fileCount++;
+            files.push_back(entry.path());
         }
     }
     
-    if (fileCount == 0) {
-        std::cout << "\nNo .fbt files found!" << std::endl;
-        std::cin.get();
+    return files;
+}
+
+bool createDirectoryIfNotExists(const fs::path& path) {
+    if (!fs::exists(path)) {
+        return fs::create_directories(path);
+    }
+    return true;
+}
+
+int main(int argc, char* argv[]) {
+    argparse::ArgumentParser program("fb_to_svg_converter", "1.0.0");
+    
+    program.add_argument("-i", "--input")
+        .help("Input directory with .fbt files")
+        .default_value(std::string("resources/fbt"));
+    
+    program.add_argument("-o", "--output")
+        .help("Output directory for .svg files")
+        .default_value(std::string("resources/svg"));
+    
+    try {
+        program.parse_args(argc, argv);
+    }
+    catch (const std::runtime_error& err) {
+        std::cerr << err.what() << std::endl;
+        std::cerr << program;
         return 1;
     }
     
-    std::cout << "\nFound " << fileCount << " .fbt file(s)" << std::endl;
+    std::string inputDir = program.get<std::string>("--input");
+    std::string outputDir = program.get<std::string>("--output");
+    
+    if (!createDirectoryIfNotExists(outputDir)) {
+        std::cerr << "Error: Cannot create output directory: " << outputDir << std::endl;
+        return 1;
+    }
+    
+    std::vector<fs::path> fbtFiles = getFbtFiles(inputDir);
+    
+    if (fbtFiles.empty()) {
+        std::cerr << "Error: No .fbt files found in directory: " << inputDir << std::endl;
+        std::cerr << "Please add .fbt files to the directory or specify another directory with --input" << std::endl;
+        return 1;
+    }
     
     FBToSVGConverter converter;
-    int success = 0;
+    int successCount = 0;
+    int failCount = 0;
     
-    for (const auto& inputFile : fbtFiles) {
-        fs::path outputFile = outputDir / inputFile.stem().concat(".svg");
+    for (size_t i = 0; i < fbtFiles.size(); ++i) {
+        const auto& inputFile = fbtFiles[i];
+        fs::path outputFile = fs::path(outputDir) / inputFile.stem().concat(".svg");
         
         if (converter.loadFromXML(inputFile.string())) {
+            std::cout << "  ✓ XML loaded successfully" << std::endl;
             if (converter.createSVG(outputFile.string())) {
-                success++;
+                std::cout << "  ✓ SVG created successfully" << std::endl;
             } else {
-                std::cout << "Failed to create SVG" << std::endl;
+                std::cout << "  ✗ Failed to create SVG" << std::endl;
             }
         } else {
-            std::cout << "Failed to load FBT" << std::endl;
+            std::cout << "  ✗ Failed to load XML" << std::endl;
         }
     }
-    
-    std::cout << "RESULTS: " << success << "/" << fileCount << " files converted" << std::endl;
-    
-    std::cout << "\nPress Enter to exit...";
-    std::cin.get();
     
     return 0;
 }
