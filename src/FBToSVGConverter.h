@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <map>
 
 struct Event {
     std::string name;
@@ -30,19 +29,13 @@ struct FunctionBlock {
     int y;
     std::string name;
     std::string type;
-    std::string comment;
     std::string version;
-    std::string author;
-    std::string date;
     std::vector<Event> events;
     std::vector<Data> data;
 };
 
 class FBToSVGConverter {
 public:
-    FBToSVGConverter();
-    ~FBToSVGConverter();
-    
     bool loadFromXML(const std::string& filename);
     bool createSVG(const std::string& outputFilename);
     const FunctionBlock& getFunctionBlock() const;

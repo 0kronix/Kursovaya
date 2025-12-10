@@ -3,9 +3,6 @@
 #include <sstream>
 #include <algorithm>
 
-FBToSVGConverter::FBToSVGConverter() {}
-FBToSVGConverter::~FBToSVGConverter() {}
-
 bool FBToSVGConverter::loadFromXML(const std::string& filename) {
     return parseXML(filename);
 }
@@ -25,10 +22,6 @@ bool FBToSVGConverter::createSVG(const std::string& outputFilename) {
     
     file.close();
     return true;
-}
-
-const FunctionBlock& FBToSVGConverter::getFunctionBlock() const {
-    return fb;
 }
 
 std::string FBToSVGConverter::createSVGHeader(int width, int height) const {
@@ -241,16 +234,13 @@ void FBToSVGConverter::calculateDimensions(int& width, int& height) const {
 
 std::string FBToSVGConverter::extractXMLValue(const std::string& content, const std::string& tag) const {
     std::string startTag = tag;
-    std::string endTag = ">";
     
     size_t startPos = content.find(startTag);
     if (startPos == std::string::npos) return "";
     
-    // Ищем закрывающую кавычку для атрибута
     size_t quoteStart = content.find("\"", startPos);
     if (quoteStart == std::string::npos) return "";
     
-    // Ищем вторую кавычку
     size_t quoteEnd = content.find("\"", quoteStart + 1);
     if (quoteEnd == std::string::npos) return "";
     
@@ -276,7 +266,6 @@ void FBToSVGConverter::parseEvents(const std::string& content, const std::string
         
         std::string eventStr = eventsSection.substr(eventStart, eventEnd - eventStart + 8);
         
-        // Извлекаем имя события
         std::string name = extractXMLValue(eventStr, "Name=");
         std::string type = extractXMLValue(eventStr, "Type=");
         std::string comment = extractXMLValue(eventStr, "Comment=");
