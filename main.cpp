@@ -31,7 +31,7 @@ bool createDirectoryIfNotExists(const fs::path& path) {
 }
 
 int main(int argc, char* argv[]) {
-    argparse::ArgumentParser program("fb_to_svg_converter", "1.0.0");
+    argparse::ArgumentParser program("fb_to_svg", "", argparse::default_arguments::help);
     
     program.add_argument("-i", "--input")
         .help("Input directory with .fbt files")
@@ -47,6 +47,7 @@ int main(int argc, char* argv[]) {
     catch (const std::runtime_error& err) {
         std::cerr << err.what() << std::endl;
         std::cerr << program;
+
         return 1;
     }
     
@@ -75,16 +76,17 @@ int main(int argc, char* argv[]) {
         fs::path outputFile = fs::path(outputDir) / inputFile.stem().concat(".svg");
         
         if (converter.loadFromXML(inputFile.string())) {
-            std::cout << "  ✓ XML loaded successfully" << std::endl;
             if (converter.createSVG(outputFile.string())) {
-                std::cout << "  ✓ SVG created successfully" << std::endl;
+                successCount ++;
             } else {
-                std::cout << "  ✗ Failed to create SVG" << std::endl;
+                failCount ++;
             }
         } else {
-            std::cout << "  ✗ Failed to load XML" << std::endl;
+            failCount ++;
         }
     }
-    
+
+    std::cout << "Created " << successCount << "/" << failCount + successCount << " files" << std::endl;
+
     return 0;
 }

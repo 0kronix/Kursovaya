@@ -1,4 +1,5 @@
 ﻿build/
 resources/svg/*.svg
+resources/fbt/*.fbt
 
 *.exe

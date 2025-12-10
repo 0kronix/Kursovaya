@@ -24,7 +24,7 @@ cmake --build .
 
 if %errorlevel% equ 0 (
     echo.
-    echo ✓ SUCCESS: Build completed!
+    echo SUCCESS: Build completed!
     echo.
     
     cd ..
@@ -32,6 +32,7 @@ if %errorlevel% equ 0 (
         echo Executable: fb_to_svg_converter.exe
         echo.
         fb_to_svg_converter.exe --help
+        echo.
         cmd /k
     ) else (
         echo ERROR: Executable not created!
