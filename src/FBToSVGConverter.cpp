@@ -70,11 +70,11 @@ std::string FBToSVGConverter::createBlockName(int width) const {
         else outputEvents++;
     }
 
-    int centerY = std::max(inputEvents, outputEvents);
+    int centerY = std::max(inputEvents, outputEvents) * 20;
     
-    ss << "<text x=\"" << fb.x + centerX << "\" y=\"" << fb.y + 20 + centerY * 20 << "\" font-family=\"Arial\" font-size=\"10\" text-anchor=\"middle\">";
+    ss << "<text x=\"" << fb.x + centerX << "\" y=\"" << fb.y + centerY + 20 << "\" font-family=\"Arial\" font-size=\"10\" text-anchor=\"middle\">";
     ss << fb.name << "</text>\n";
-    ss << "<text x=\"" << fb.x + centerX << "\" y=\"" << fb.y + 40 + centerY * 20 << "\" font-family=\"Arial\" font-size=\"10\" text-anchor=\"middle\">";
+    ss << "<text x=\"" << fb.x + centerX << "\" y=\"" << fb.y + centerY + 40 << "\" font-family=\"Arial\" font-size=\"10\" text-anchor=\"middle\">";
     ss << fb.version << "</text>\n";
     
     return ss.str();
@@ -208,9 +208,11 @@ void FBToSVGConverter::calculateDimensions(int& width, int& height) const {
         if (data.dataType == "input") inputData++;
         else outputData++;
     }
-    
-    int maxElements = std::max(inputEvents + inputData, outputEvents + outputData);
-    height = maxElements * 20 + 50;
+
+    int eventsHeight = std::max(inputEvents, outputEvents) * 20;
+    int dataHeight = std::max(inputData, outputData) * 20;
+
+    height = eventsHeight + dataHeight + 50;
     
     int maxNameLength = 0;
     
