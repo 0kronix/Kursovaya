@@ -43,7 +43,6 @@ class FBToSVGConverter {
 public:
     bool loadFromXML(const std::string& filename);
     bool createSVG(const std::string& outputFilename);
-    const FunctionBlock& getFunctionBlock() const;
 
 private:
     FunctionBlock fb;
@@ -57,7 +56,6 @@ private:
     void calculateDimensions(int& width, int& height) const;
 
     bool parseXML(const std::string& filename);
-    std::string extractXMLValue(const std::string& content, const std::string& tag) const;
     void parseEvents(tinyxml2::XMLElement* fbType);
     void parseData(tinyxml2::XMLElement* fbType);
 };
