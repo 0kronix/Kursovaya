@@ -12,21 +12,29 @@ namespace tinyxml2 {
 struct Event {
     std::string name;
     std::string type;
-    std::string eventType; // "input" или "output"
+    std::string eventType;
     std::string comment;
     
-    Event(const std::string& n, const std::string& t, const std::string& et, const std::string& c) : 
-        name(n), type(t), eventType(et), comment(c) {}
+    Event(const std::string& n, const std::string& t, 
+          const std::string& et, const std::string& c);
+    
+    ~Event() = default;
+    Event(const Event&) = default;
+    Event& operator=(const Event&) = default;
 };
 
 struct Data {
     std::string name;
     std::string type;
-    std::string dataType; // "input" или "output"
+    std::string dataType;
     std::string comment;
     
-    Data(const std::string& n, const std::string& t, const std::string& dt, const std::string& c) : 
-        name(n), type(t), dataType(dt), comment(c) {}
+    Data(const std::string& n, const std::string& t, 
+         const std::string& dt, const std::string& c);
+    
+    ~Data() = default;
+    Data(const Data&) = default;
+    Data& operator=(const Data&) = default;
 };
 
 struct FunctionBlock {
@@ -36,10 +44,18 @@ struct FunctionBlock {
     std::string version;
     std::vector<Event> events;
     std::vector<Data> data;
+    
+    ~FunctionBlock() = default;
+    FunctionBlock(const FunctionBlock&) = default;
+    FunctionBlock& operator=(const FunctionBlock&) = default;
 };
 
 class FBToSVGConverter {
 public:
+    ~FBToSVGConverter() = default;
+    FBToSVGConverter(const FBToSVGConverter&) = default;
+    FBToSVGConverter& operator=(const FBToSVGConverter&) = default;
+    
     bool loadFromXML(const std::string& filename);
     bool createSVG(const std::string& outputFilename);
 
