@@ -33,7 +33,6 @@ struct FunctionBlock {
     int x;
     int y;
     std::string name;
-    std::string type;
     std::string version;
     std::vector<Event> events;
     std::vector<Data> data;
